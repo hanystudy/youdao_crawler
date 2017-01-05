@@ -40,8 +40,12 @@ module Crawler
     (0..page_count.to_i).each do |page_index|
       url = "http://dict.youdao.com/wordbook/wordlist?p=#{page_index}&tags="
       page = Nokogiri::HTML(read_word_list_page(url).body)
-      page.css('#wordlist .word').each do |word|
-        word_list << word.attribute('title').value
+      descriptions = page.css('#wordlist .desc')
+      page.css('#wordlist .word').each_with_index do |word, index|
+        vocab = word.attribute('title').value
+        description = descriptions[index].attribute('title').value
+        # we should ignore invalid words & reformat
+        word_list << "#{vocab}\t#{description.gsub(/[\r\n]/, ' ')}" if !vocab.empty? && !description.empty?
       end
       puts "loading #{url}"
     end
